@@ -11,7 +11,6 @@ public:
         isClick = false;
     }
     ~Tile(){}
-
 private:
     bool isClick,isBomb;
     int aroundBombCount;
