@@ -1,23 +1,12 @@
-#include <stdio.h>
 #include <windows.h>
-#include <vector>
-#include "IOControl.hpp"
-#include "Texture.hpp"
+#include"TileSet.hpp"
 using namespace std;
-
-struct point
-{
-    int x,y;	//´æ´¢¾ØÐÎÎ»ÖÃ
-};
-vector<point> vec;
-
-auto p = MEOM::IOControl::getInstance();
+using namespace MEOM;
 RECT g_rect = {0};
 HINSTANCE   g_hInst = NULL;
 HWND        hwnd 	= NULL;
-HDC			hdc 	= NULL;
-HDC 		buffer	= NULL;
-HBITMAP 	bmp;
+
+TileSet ts(10, 10, 10);
 
 HRESULT InitWindow(HINSTANCE hInstance,int nCmdShow);
 LRESULT CALLBACK  WndProc(HWND,UINT,WPARAM,LPARAM);
@@ -26,19 +15,15 @@ void Render(HDC buf);
 int main()
 {
 	HINSTANCE hInstance = GetModuleHandle(NULL);
-	MEOM::Texture tt;
 
     if(FAILED(InitWindow(hInstance, true)))
         return 0;
     MSG msg = {0};
-
+	Renderer::getInstance().initialize(hwnd);
 	GetClientRect(hwnd,&g_rect);
-
-	hdc = GetDC(hwnd);
-	buffer = CreateCompatibleDC(hdc);
-	bmp = CreateCompatibleBitmap(hdc,g_rect.right,g_rect.bottom);
-
-	while(WM_QUIT != msg.message)
+	ts.setLeftTop({ 100, 100 });
+	ts.setupTiles();
+	while (WM_QUIT != msg.message)
 	{
 		if(PeekMessage(&msg,NULL,0,0,PM_REMOVE))
 		{
@@ -47,8 +32,8 @@ int main()
 		}
 		else
 		{
-			Render(buffer);
-			BitBlt(hdc,0,0,g_rect.right - g_rect.left,g_rect.bottom - g_rect.top,buffer,0,0,SRCCOPY);
+			ts.Render();
+			RENDERER.render();
 		}
 	}
 	return (int)msg.wParam;
@@ -75,7 +60,7 @@ HRESULT InitWindow(HINSTANCE hInstance,int nCmdShow)
 
     // Create window
     g_hInst = hInstance;
-    RECT rc = {0,0,300,300};
+    RECT rc = {0,0,800,600};
     AdjustWindowRect(&rc,WS_OVERLAPPEDWINDOW,FALSE);
     hwnd = CreateWindow("CrystalMiao","Crystal Miao",WS_OVERLAPPEDWINDOW,
                            CW_USEDEFAULT,CW_USEDEFAULT,rc.right - rc.left,
@@ -91,30 +76,22 @@ bool isDown = false;
 
 LRESULT CALLBACK WndProc(HWND hWnd,UINT message,WPARAM wParam,LPARAM lParam)
 {
-
-	point pt;
     switch(message)
     {
         case WM_DESTROY:
             PostQuitMessage(0);
             break;
 		case WM_MOUSEMOVE:
-			if(isDown == false)
-			{
-				break;
-			}
-			pt.x = LOWORD(lParam);
-			pt.y = HIWORD(lParam);
-			vec.push_back(pt);
 			break;
 		case WM_LBUTTONDOWN:
-			isDown = true;
 			break;
 		case WM_LBUTTONUP:
-			isDown = false;
+			ts.clickOnTileCoord(HIWORD(lParam), LOWORD(lParam));
 			break;
 		case WM_KEYDOWN:
-			printf("%c",wParam);
+			break;
+		case WM_SIZE:
+			Renderer::getInstance().updateRenderSize();
 			break;
         default:
             return DefWindowProc(hWnd,message,wParam,lParam);
@@ -124,12 +101,3 @@ LRESULT CALLBACK WndProc(HWND hWnd,UINT message,WPARAM wParam,LPARAM lParam)
 
 HPEN pen = CreatePen(PS_SOLID,1,RGB(255,255,0));
 HBRUSH brush = CreateSolidBrush(RGB(0,255,0));
-void Render(HDC buf)
-{
-	SelectObject(buf,bmp);
-	//Add your render code here.
-	SelectObject(buf,pen);
-	SelectObject(buf,brush);
-	for(int i=0;i<vec.size();i++)
-		Rectangle(buf,vec[i].x,vec[i].y,vec[i].x + 10,vec[i].y +10);
-}

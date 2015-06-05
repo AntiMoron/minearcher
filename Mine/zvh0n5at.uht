@@ -1,6 +1,5 @@
 #ifndef TILE_HPP
 #define TILE_HPP
-#include<string>
 #include"Renderer.hpp"
 #include"TileStatus.hpp"
 #include"Texture.hpp"
@@ -49,18 +48,16 @@ namespace MEOM
 		{
 			if (bIsClick == true)
 			{
-				RENDERER.drawTexture(*emptyTexture, leftTop);
+				Renderer::getInstance().drawTexture(*emptyTexture, leftTop);
 				if (aroundBombCount > 0)
 				{
-					std::string str = std::to_string(aroundBombCount);
-					RENDERER.drawText(str.c_str(), 10, leftTop,
-					{ leftTop.x + Tile::tileLength,
-					leftTop.y + Tile::tileLength });
+//					DrawTextA;
 				}
 			}
 			else
 			{
 				Renderer::getInstance().drawTexture(*defaultTexture, leftTop);
+				defaultTexture->renderTextureOnDc(hdc, leftTop);
 			}
 		}
 		void setTileStatus(TileStatus val)

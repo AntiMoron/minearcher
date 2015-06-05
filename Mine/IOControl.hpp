@@ -1,34 +1,28 @@
 #ifndef IOCONTROL_HPP
 #define IOCONTROL_HPP
-
-namespace MEOM{
-class IOControl
+#include"Point.hpp"
+namespace MEOM
 {
-public:
-    ~IOControl(){}
-    static IOControl* getInstance()
-    {
-        if(io == nullptr)
-            io = new IOControl;
-        return io;
-    }
-    void setPoi(int s,int u)
-    {
-        x = s;
-        y = u;
-    }
-    int getX()
-    {
-        return x;
-    }
-    int getY()
-    {
-        return y;
-    }
-private:
-    IOControl(){}
-    static IOControl* io;
-    int x,y;
-};
+	class IOControl
+	{
+	public:
+		~IOControl(){}
+		static IOControl& getInstance()
+		{
+			static IOControl inst;
+			return inst;
+		}
+		void setPosition(Point pt)
+		{
+			mousePosition = pt;
+		}
+		const Point& getMousePosition()const
+		{
+			return mousePosition;
+		}
+	private:
+		IOControl(){}
+		Point mousePosition;
+	};
 }
 #endif // IOCONTROL_HPP

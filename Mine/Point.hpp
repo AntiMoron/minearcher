@@ -5,7 +5,7 @@ namespace MEOM
 {
 	struct Point
 	{
-		double x, y;
+		int x, y;
 	};
 }
 

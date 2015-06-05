@@ -14,14 +14,23 @@ namespace MEOM
 			bitmap = reinterpret_cast<HBITMAP>(LoadImageA(NULL, fileName, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE));
 			BITMAP bmpHeader;
 			GetObject(bitmap, sizeof(BITMAP), reinterpret_cast<LPBYTE>(&bmpHeader));
+			width = bmpHeader.bmWidth;
+			height = bmpHeader.bmHeight;
 		}
-		~Texture(){}
-		void renderTextureOnDc(HWND hwnd,HDC dc,const Point& p)
+		int getWidth() const
+		{
+			return width;
+		}
+		int getHeight() const
+		{
+			return height;
+		}		
+		void renderTextureOnDc(HDC dc,const Point& p) const
 		{
 			HDC tmpDc = CreateCompatibleDC(nullptr);
 			SelectObject(tmpDc, bitmap);
 			BitBlt(dc, p.x, p.y, 35, 35, tmpDc, 0, 0, SRCCOPY);
-			ReleaseDC(hwnd, tmpDc);
+			DeleteDC(tmpDc);
 		}
 	private:
 		int width;
