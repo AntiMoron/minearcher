@@ -64,11 +64,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="GameStatus.hpp" />
     <ClInclude Include="GetMessage.hpp" />
     <ClInclude Include="TileSet.hpp" />
     <ClInclude Include="TileStatus.hpp" />
     <ClInclude Include="IOControl.hpp" />
-    <ClInclude Include="MouseStatus.hpp" />
     <ClInclude Include="Point.hpp" />
     <ClInclude Include="Renderer.hpp" />
     <ClInclude Include="Texture.hpp" />

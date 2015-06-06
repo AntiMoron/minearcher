@@ -8,18 +8,33 @@ namespace MEOM
 {
 	class Tile
 	{
-	public:
-		const static size_t tileLength = 36;
 		static Texture* defaultTexture;
 		static Texture* clickTexture;
 		static Texture* rollOverTexture;
 		static Texture* bombTexture;
 		static Texture* emptyTexture;
+		static Texture* markedTexture;
+	public:
+		const static size_t tileLength = 36;
+		static void releaseSource()
+		{
+			delete defaultTexture;
+			delete clickTexture;
+			delete rollOverTexture;
+			delete bombTexture;
+			delete emptyTexture;
+			delete markedTexture;
+		}
 		Tile()
 		{
 			aroundBombCount = 0;
 			bIsClick = false;
 			bIsBomb = false;
+			bIsMark = false;
+		}
+		void setCovered()
+		{
+			bIsClick = false;
 		}
 		void setBomb(bool b)
 		{
@@ -41,6 +56,16 @@ namespace MEOM
 		{
 			bIsClick = true;
 		}
+		void mark()
+		{
+			if (bIsClick)
+				return;
+			bIsMark = !bIsMark;
+		}
+		bool isMarked() const
+		{
+			return bIsMark;
+		}
 		bool isClicked() const
 		{
 			return bIsClick;
@@ -50,17 +75,25 @@ namespace MEOM
 			if (bIsClick == true)
 			{
 				RENDERER.drawTexture(*emptyTexture, leftTop);
-				if (aroundBombCount > 0)
+				if (bIsBomb)
+				{
+					RENDERER.drawTexture(*bombTexture, leftTop);
+				}
+				else if (aroundBombCount > 0)
 				{
 					std::string str = std::to_string(aroundBombCount);
-					RENDERER.drawText(str.c_str(), 10, leftTop,
+					RENDERER.drawText(str.c_str(), Tile::tileLength, leftTop,
 					{ leftTop.x + Tile::tileLength,
 					leftTop.y + Tile::tileLength });
-				}
+				}				
+			}
+			else if (bIsMark == true)
+			{
+				RENDERER.drawTexture(*markedTexture, leftTop);
 			}
 			else
 			{
-				Renderer::getInstance().drawTexture(*defaultTexture, leftTop);
+				RENDERER.drawTexture(*defaultTexture, leftTop);
 			}
 		}
 		void setTileStatus(TileStatus val)
@@ -80,10 +113,12 @@ namespace MEOM
 			return leftTop;
 		}
 	private:
+		friend class TileSet;
 		Point leftTop;
 		TileStatus tileStatus;
 		bool bIsClick;
 		bool bIsBomb;
+		bool bIsMark;
 		int aroundBombCount;
 	};
 }

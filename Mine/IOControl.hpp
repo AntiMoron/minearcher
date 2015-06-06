@@ -12,7 +12,7 @@ namespace MEOM
 			static IOControl inst;
 			return inst;
 		}
-		void setPosition(Point pt)
+		void setMousePosition(Point pt)
 		{
 			mousePosition = pt;
 		}
@@ -25,4 +25,5 @@ namespace MEOM
 		Point mousePosition;
 	};
 }
+#define IOCONTROL (IOControl::getInstance())
 #endif // IOCONTROL_HPP

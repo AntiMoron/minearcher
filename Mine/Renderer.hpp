@@ -35,7 +35,7 @@ namespace MEOM
 			GetClientRect(windowHandle, &rect);
 			bufferBitmap = CreateCompatibleBitmap(windowDC, rect.right, rect.bottom);
 		}
-		void drawCircle(int x, int y, int r)
+		void drawCircle(int x, int y, int r)const
 		{
 			SelectObject(bufferDC, bufferBitmap);
 			HPEN pen = CreatePen(PS_SOLID, 1, RGB(255, 255, 0));
@@ -43,28 +43,50 @@ namespace MEOM
 			Ellipse(bufferDC, x - r, y - r, x + r, y + r);
 			DeleteObject(pen);
 		}
-		void drawRectangle()
+		void drawRectangle(Point leftTop,Point rightBottom)const
 		{
 			SelectObject(bufferDC, bufferBitmap);
+			HPEN pen = CreatePen(PS_SOLID, 1, RGB(255, 255, 255));
+			HBRUSH brush = CreateSolidBrush(RGB(255, 255, 255));
+			SelectObject(bufferDC, pen);
+			SelectObject(bufferDC, brush);
+			Rectangle(bufferDC, leftTop.x, leftTop.y, rightBottom.x, rightBottom.y);
+			DeleteObject(pen);
+			DeleteObject(brush);
 		}
-		void drawTexture(const Texture& tex,Point leftTop)
+		void drawTexture(const Texture& tex,Point leftTop)const
 		{
 			SelectObject(bufferDC, bufferBitmap);
 			//Add your render code here.
 			tex.renderTextureOnDc(bufferDC, leftTop);
 		}
-		void drawText(const char* text,int size,Point leftTop,Point rightBottom)
+		void drawText(const char* text,int size,Point leftTop,Point rightBottom)const
 		{
 			SelectObject(bufferDC, bufferBitmap);
 			SetBkMode(bufferDC, TRANSPARENT);
-			SetTextColor(bufferDC, RGB(255, 0, 0));
+			SetTextColor(bufferDC, RGB(0, 0, 0));
+			HFONT font;
+			LOGFONTA lf;
+			lf.lfOrientation = 0;
+			lf.lfHeight = size;
+			lf.lfWidth = size / 2;
+			lf.lfWeight = FW_MEDIUM;
+			lf.lfStrikeOut = false;
+			lf.lfUnderline = false;
+			lf.lfCharSet = ANSI_CHARSET;
+			lf.lfEscapement = 0;
+			lf.lfQuality = ANTIALIASED_QUALITY;
+			lf.lfPitchAndFamily = FF_SCRIPT;
+			font = CreateFontIndirectA(&lf);
 			RECT r;
 			r.left = leftTop.x;
 			r.right = rightBottom.x;
 			r.top = leftTop.y;
-			r.top = rightBottom.y;			
+			r.bottom = rightBottom.y;
 			//Add your render code here.
+			SelectObject(bufferDC, font);
 			DrawTextA(bufferDC, text, -1, &r, DT_CENTER | DT_VCENTER);
+			DeleteObject(font);
 		}
 		void render() const
 		{
@@ -73,6 +95,7 @@ namespace MEOM
 				rect.bottom - rect.top,
 				bufferDC, 0, 0,
 				SRCCOPY);
+			drawRectangle({ rect.left, rect.top }, { rect.right, rect.bottom });
 		}
 	private:
 		HWND windowHandle;

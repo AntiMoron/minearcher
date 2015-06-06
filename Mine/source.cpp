@@ -1,3 +1,4 @@
+#include<ctime>
 #include <windows.h>
 #include"TileSet.hpp"
 using namespace std;
@@ -5,7 +6,7 @@ using namespace MEOM;
 RECT g_rect = {0};
 HINSTANCE   g_hInst = NULL;
 HWND        hwnd 	= NULL;
-
+bool gamePlaying = true;
 TileSet ts(10, 10, 10);
 
 HRESULT InitWindow(HINSTANCE hInstance,int nCmdShow);
@@ -19,7 +20,8 @@ int main()
     if(FAILED(InitWindow(hInstance, true)))
         return 0;
     MSG msg = {0};
-	Renderer::getInstance().initialize(hwnd);
+	std::srand((unsigned int)std::time(nullptr));
+	RENDERER.initialize(hwnd);
 	GetClientRect(hwnd,&g_rect);
 	ts.setLeftTop({ 100, 100 });
 	ts.setupTiles();
@@ -33,6 +35,24 @@ int main()
 		else
 		{
 			ts.Render();
+			std::string markedBomb = "Bombs marked : " + std::to_string(ts.getMarkedTiles());
+			std::string totalBomb = "Bombs in total : " + std::to_string(ts.getTotalBombs());
+			RENDERER.drawText("Press \'R\' to restart.", 26, { 0, 0 }, { 500, 26 });
+			RENDERER.drawText(markedBomb.c_str(), 26, { 0, 26 }, { 500, 52 });
+			RENDERER.drawText(totalBomb.c_str(), 26, { 0, 52 }, { 500, 78 });
+			if (gamePlaying == false)
+			{
+				if (ts.getGameStatus() == GAME_WIN)
+				{
+					RENDERER.drawText("You win", 26, { 0, 78 }, { 500, 104 });
+				}
+				else
+					RENDERER.drawText("You lose", 26, { 0, 78 }, { 500, 104 });
+			}
+			else
+			{
+				gamePlaying = (ts.getGameStatus() == GAME_PLAYING);
+			}
 			RENDERER.render();
 		}
 	}
@@ -72,32 +92,47 @@ HRESULT InitWindow(HINSTANCE hInstance,int nCmdShow)
     return S_OK;
 }
 
-bool isDown = false;
-
 LRESULT CALLBACK WndProc(HWND hWnd,UINT message,WPARAM wParam,LPARAM lParam)
 {
-    switch(message)
-    {
-        case WM_DESTROY:
-            PostQuitMessage(0);
-            break;
-		case WM_MOUSEMOVE:
-			break;
-		case WM_LBUTTONDOWN:
-			break;
-		case WM_LBUTTONUP:
+	switch (message)
+	{
+	case WM_DESTROY:
+		Tile::releaseSource();
+		PostQuitMessage(0);
+		break;
+	case WM_MOUSEMOVE:
+		IOCONTROL.setMousePosition({ HIWORD(lParam), LOWORD(lParam) });
+		break;
+	case WM_LBUTTONDOWN:
+		break;
+	case WM_RBUTTONDOWN:
+		break;
+	case WM_MBUTTONDOWN:
+		break;
+	case WM_LBUTTONUP:
+		if (gamePlaying)
 			ts.clickOnTileCoord(HIWORD(lParam), LOWORD(lParam));
-			break;
-		case WM_KEYDOWN:
-			break;
-		case WM_SIZE:
-			Renderer::getInstance().updateRenderSize();
-			break;
-        default:
-            return DefWindowProc(hWnd,message,wParam,lParam);
+		break;
+	case WM_RBUTTONUP:
+		if (gamePlaying)
+			ts.markWithMousePosition(HIWORD(lParam), LOWORD(lParam));
+		break;
+	case WM_MBUTTONUP:
+		if (gamePlaying)
+			ts.autoClickWithMousePosition(HIWORD(lParam), LOWORD(lParam));
+		break;
+	case WM_KEYDOWN:
+		if (wParam == 'R')
+		{
+			ts.setupTiles();
+			gamePlaying = true;
+		}
+		break;
+	case WM_SIZE:
+		RENDERER.updateRenderSize();
+		break;
+	default:
+		return DefWindowProc(hWnd,message,wParam,lParam);
     }
     return 0;
 }
-
-HPEN pen = CreatePen(PS_SOLID,1,RGB(255,255,0));
-HBRUSH brush = CreateSolidBrush(RGB(0,255,0));
