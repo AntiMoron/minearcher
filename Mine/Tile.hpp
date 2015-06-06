@@ -34,6 +34,7 @@ namespace MEOM
 		}
 		void setCovered()
 		{
+			bIsMark = false;
 			bIsClick = false;
 		}
 		void setBomb(bool b)
